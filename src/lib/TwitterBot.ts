@@ -14,6 +14,10 @@ interface props{
     }
   
 }
+
+interface msgProps{
+  name:string
+}
 interface tweetlikeprops{
   id_str:string,
   text:string,
@@ -264,9 +268,24 @@ export async function searchTweetsUsingTrends() {
   console.log('Starting Twitter Bot...');
   try {
     const details = await agent.invoke({
-      messages: [new HumanMessage('Please get my account details and  return  my  email or  username')],
+      messages: [new HumanMessage('Please get my account details ')],
     });
-    console.log('Account Details:', details?.content);
+
+    // Find the message with the name "account_details_tools"
+    const accountDetailsMessage = details.messages.find(
+      (message:msgProps) => message.name === "account_details_tools"
+    );
+
+    if (accountDetailsMessage) {
+      // Parse the content of the message
+      const accountDetails = JSON.parse(accountDetailsMessage.content);
+      // Extract the name
+      const name = accountDetails.name;
+      console.log(`Name: ${name}`);
+    } else {
+      console.log("Account details message not found.");
+    }
+
     console.log('Twitter Bot is running!');
   } catch (error) {
     console.error('Error starting bot:', error);
