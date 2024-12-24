@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const job  =  await  req.json() 
+    const {job} =  await  req.json() 
 
     switch (job) {
       case 'tweetEvery3Hours':
