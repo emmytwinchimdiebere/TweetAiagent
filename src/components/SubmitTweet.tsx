@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/hooks/use-toast"
 import { Bird } from 'lucide-react';
 
 
@@ -12,7 +11,7 @@ import { Bird } from 'lucide-react';
 export default function SubmitDataPage() {
   const [inputData, setInputData] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+ 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,21 +30,13 @@ export default function SubmitDataPage() {
         throw new Error('Failed to submit data')
       }
 
-      toast({
-        title: "Success",
-        description: "Your data has been submitted successfully.",
-      })
 
       // Optionally, redirect to another page or clear the form
       setInputData('')
       // router.push('/thank-you') // Uncomment this line if you want to redirect after submission
     } catch (error) {
       console.error('Error submitting data:', error)
-      toast({
-        title: "Error",
-        description: "Failed to submit data. Please try again.",
-        variant: "destructive",
-      })
+   
     } finally {
       setIsLoading(false)
     }
