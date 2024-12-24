@@ -3,6 +3,9 @@ import { HumanMessage } from '@langchain/core/messages';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { postTool, replyTool, mentionTool, accountDetailsTools , trendingTopicsTool, searchTweetsTool, likeTweet } from './twitterApi';
+import "../utils/cronJobs"
+
+
 interface props{
  
     id_str:string,
@@ -57,21 +60,7 @@ export async function postTweet(content: string) {
     throw error;
   }
 }
-// Function to schedule regular tweets (7 times a day)
-cron.schedule('0 */3 * * *', async () => {  // Run every 3 hours
-  let topic;
-  // Prioritize DAO and AI agents
-  const randomNumber = Math.random();
-  if (randomNumber < 0.5) {
-    topic = prioritizedTopics[Math.floor(Math.random() * prioritizedTopics.length)];
-  } else {
-    topic = otherTopics[Math.floor(Math.random() * otherTopics.length)];
-  }
-  const tweet = await generateTweet(topic);
-  if (tweet) {
-    await postTweet(tweet);
-  }
-});
+
 // Function to analyze sentiment of a mention
 export async function analyzeSentiment(text: string) {
   try {
@@ -113,24 +102,7 @@ export async function replyToMention(mention: props, sentiment: string) {
     throw error;
   }
 }
-// Function to reply to mentions if needed (runs every 10 minutes)
-let lastMentionReplyTime: Date | null = null;
-cron.schedule('*/10 * * * *', async () => {
-  const now = new Date();
-  const X_MINUTES = 10;
-  if (lastMentionReplyTime && (now.getTime() - lastMentionReplyTime.getTime()) < X_MINUTES * 60000) {
-    console.log(`Skipping mentions, last processed less than ${X_MINUTES} minutes ago.`);
-    return;
-  }
-  const mentions = await getRecentMentions();
-  if (mentions) {
-    for (const mention of mentions) {
-      const sentiment = await analyzeSentiment(mention.text);
-      await replyToMention(mention, sentiment);
-    }
-  }
-  lastMentionReplyTime = new Date();
-});
+
 // Function to monitor trends and post about them
 export async function fetchTrendingTopics() {
   try {
@@ -183,8 +155,7 @@ export async function monitorAndPostRelevantTrends() {
     console.error('Error monitoring and posting relevant trends:', error);
   }
 }
-// Schedule the bot to monitor trends and post tweets using relevant trends every 4 hours
-cron.schedule('0 */4 * * *', monitorAndPostRelevantTrends);  // Run every 4 hours
+
 // Analyze followers growth and engagement periodically
 export async function analyzeFollowers() {
   try {
@@ -196,8 +167,7 @@ export async function analyzeFollowers() {
     console.error('Error analyzing followers:', error);
   }
 }
-// Run daily analysis of followers
-cron.schedule('0 12 * * *', analyzeFollowers);  // Run at noon daily
+
 // Post polls at a scheduled time
 let lastPollDate: Date | null = null;
 export async function postPollIfNeeded() {
@@ -221,7 +191,7 @@ export async function postPoll(question: string, options: string[]) {
     console.error('Error posting poll:', error);
   }
 }
-cron.schedule('0 9 * * *', postPollIfNeeded);  // Run every day at 9 AM
+
 // Function to search for tweets based on a keyword
 export async function searchTweetsByKeyword(keyword: string) {
   try {
@@ -235,8 +205,7 @@ export async function searchTweetsByKeyword(keyword: string) {
     throw error;
   }
 }
-// Call the function to search tweets for relevant trends
-cron.schedule('0 */6 * * *', searchTweetsUsingTrends);  // Search every 6 hours
+
 export async function likeATweet(tweetId: string, userId:string) {
   try {
     await agent.invoke({
@@ -291,7 +260,6 @@ export async function searchTweetsUsingTrends() {
   }
 }
 // Schedule the function to run every 6 hours
-cron.schedule('0 */6 * * *', searchTweetsUsingTrends);
 (async function startBot() {
   console.log('Starting Twitter Bot...');
   try {

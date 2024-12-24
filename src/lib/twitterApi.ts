@@ -11,8 +11,6 @@ const twitterApiKey =  process.env?.NEXT_TWITTER_API_KEY
 
  
  
-  
-
 const TwitterApiReadWrite = new TwitterApi({
   appKey: twitterApiKey!,
   appSecret: twitterApiSecret!,
