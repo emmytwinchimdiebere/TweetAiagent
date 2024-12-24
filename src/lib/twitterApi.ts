@@ -2,7 +2,7 @@ import { TwitterApi } from 'twitter-api-v2';
 import { z } from 'zod';
 import { tool } from "@langchain/core/tools";
 
-
+/*
 const twitterApiKey =  process.env?.NEXT_PUBLIC_TWITTER_API_KEY
   const twitterApiSecret =  process.env?.NEXT_PUBLIC_TWITTER_API_SECRET
   const twitterAccessToken = process.env?.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN
@@ -10,6 +10,11 @@ const twitterApiKey =  process.env?.NEXT_PUBLIC_TWITTER_API_KEY
 
 
 
+*/
+const twitterApiKey =  "2QX41tK0ERohUxPeUED3Fxxix"
+  const twitterApiSecret = "3ZJArPAxeRwdHnPQY7P7FMfpzw3TxbaqkjEDksOxBixN2Babyf"
+  const twitterAccessToken = "1722500378132934657-ANDo897BJ4zPtLVWFtTCgOibvnFfHw"
+  const twitterAccessTokenSecret =  "3LCXkIWMRPYT6ycy3vUoVtDuHv5cEeOKN1WRLQmQ1XBwo"
 
 
 const TwitterApiReadWrite = new TwitterApi({
