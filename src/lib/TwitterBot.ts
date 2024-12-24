@@ -23,7 +23,7 @@ interface tweetlikeprops{
 const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet];
 const chat = new ChatGoogleGenerativeAI({
   model: 'gemini-1.5-flash',
-  apiKey: process.env.GOOGLE_GEN_AI_API_KEY,  // Use env variable for API key
+  apiKey: process.env.NEXT_GOOGLE_API_KEY,  // Use env variable for API key
   maxOutputTokens: 100,
 });
 const agent = createReactAgent({
@@ -37,7 +37,7 @@ const otherTopics = ['AI', 'Machine Learning', 'Blockchain', 'Crypto'];
 export async function generateTweet(topic: string) {
   try {
     const response = await agent.invoke({
-      messages: new HumanMessage(`Post a creative tweet about ${topic}`),
+      messages: new HumanMessage(`Post a creative tweet about ${topic} & add emoji to express your sentiments`),
     });
     return response?.content;
   } catch (error) {
