@@ -3,10 +3,11 @@ import { z } from 'zod';
 import { tool } from "@langchain/core/tools";
 
 
-const twitterApiKey =  process.env?.NEXT_TWITTER_API_KEY
-  const twitterApiSecret =  process.env?.NEXT_TWITTER_API_SECRET
-  const twitterAccessToken = process.env?.NEXT_TWITTER_ACCESS_TOKEN
-  const twitterAccessTokenSecret =  process.env?.NEXT_TWITTER_ACCESS_TOKEN_SECRET
+const twitterApiKey =  process.env?.NEXT_PUBLIC_TWITTER_API_KEY
+  const twitterApiSecret =  process.env?.NEXT_PUBLIC_TWITTER_API_SECRET
+  const twitterAccessToken = process.env?.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN
+  const twitterAccessTokenSecret =  process.env?.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN_SECRET
+
 
 
 

@@ -29,7 +29,7 @@ interface tweetlikeprops{
 const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet];
 const chat = new ChatGoogleGenerativeAI({
   model: 'gemini-1.5-flash',
-  apiKey: process.env.NEXT_GOOGLE_API_KEY,  // Use env variable for API key
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY ,  // Use env variable for API key
   maxOutputTokens: 100,
 });
 const agent = createReactAgent({
