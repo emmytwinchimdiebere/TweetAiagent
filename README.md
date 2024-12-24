@@ -82,18 +82,20 @@ Twitter AI Agent is a Next.js application that integrates with the Twitter API t
 ## Project Structure
 
 ```
-twitter-ai-agent/
+CDPTOOLKit/
 ├── public/                 # Static assets
 ├── src/                    # Source files
+│   ├── app/                # Next.js app directory
+│   │   ├── api/            # API routes
+│   │   └── ...             # Other app-specific files
 │   ├── components/         # React components
-│   ├── pages/              # Next.js pages
-│   ├── styles/             # CSS styles
-│   └── utils/              # Utility functions
+│   ├── lib/                # Utility functions and libraries
+│   └── ...                 # Other source files
 ├── .env.local              # Environment variables
 ├── .gitignore              # Git ignore file
 ├── next.config.js          # Next.js configuration
 ├── package.json            # Project metadata and dependencies
-└── README.md               # Project documentation
+└── README.md               # Project documentation           # Project documentation
 ```
 
 ## API Integration
