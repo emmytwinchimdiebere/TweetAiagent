@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/hooks/use-toast"
 import { Bird } from 'lucide-react';
+
+
+
+
 export default function SubmitDataPage() {
   const [inputData, setInputData] = useState('')
   const [isLoading, setIsLoading] = useState(false)
