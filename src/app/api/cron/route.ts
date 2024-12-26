@@ -1,7 +1,18 @@
-import { generateTweet, postTweet } from '@/lib/TwitterBot';
-import { getRecentMentions, replyToMention, analyzeSentiment } from '@/lib/TwitterBot';
+import { generateTweet, postTweet, scrapeAndPostEveryTwoHours } from '@/lib/TwitterBot';
+import { getRecentMentions, replyToMention } from '@/lib/TwitterBot';
 import { monitorAndPostRelevantTrends, analyzeFollowers, postPollIfNeeded, searchTweetsUsingTrends } from '@/lib/TwitterBot'; // Import your custom functions
 import { NextRequest, NextResponse } from 'next/server';
+import { startOfDay, addDays, isAfter } from 'date-fns';
+import { Redis } from '@upstash/redis'
+
+
+
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN
+})
+
 
 // Define the POST handler for all cron jobs
 export async function POST(req: NextRequest) {
@@ -37,6 +48,11 @@ export async function POST(req: NextRequest) {
         await runSearchTweetsJob();
         break;
 
+       case "scrapeAndPostEveryTwoHours":
+        await  scrapeAndPostEveryTwoHoursJob()
+        break;
+
+
       default:
         return NextResponse.json({ message: 'Invalid cron job specified' });
     }
@@ -49,23 +65,71 @@ export async function POST(req: NextRequest) {
   }
 }
 
+
+async function getTweetCountFromRedis() {
+  const tweetCount = await redis.get('tweetCount');
+  if (tweetCount) {
+    return JSON.parse(tweetCount as string);
+  } else {
+    return { count: 0, lastReset: new Date() };
+  }
+}
+
+async function incrementTweetCountInRedis() {
+  const tweetCount = await getTweetCountFromRedis();
+  tweetCount.count += 1;
+  await redis.set('tweetCount', JSON.stringify(tweetCount));
+}
+
+async function resetTweetCountInRedis() {
+  const newTweetCount = { count: 0, lastReset: new Date() };
+  await redis.set('tweetCount', JSON.stringify(newTweetCount));
+}
+
 // Job to tweet every 3 hours
 async function runTweetJob() {
-
-  const prioritizedTopics = ['DAO', 'AI agents'];
-  const otherTopics = ['AI', 'Machine Learning', 'Blockchain', 'Crypto'];
+  const MAX_TWEETS_PER_DAY = 10;
+  let tweetCount = await getTweetCountFromRedis();
+  
+  // Reset the tweet count if it's a new day
+  const now = new Date();
+  const dayStart = startOfDay(now);
+ 
+  if (tweetCount.lastReset && isAfter(now, addDays(new Date(tweetCount.lastReset), 1))) {
+    await resetTweetCountInRedis();
+    tweetCount = { count: 0, lastReset: dayStart };
+  }
+  // Check if the bot has already tweeted 7 times today
+  if (tweetCount.count >= MAX_TWEETS_PER_DAY) {
+    console.log(`Maximum tweets reached for today (${MAX_TWEETS_PER_DAY} tweets).`);
+    return;
+  }
+  const prioritizedTopics = [
+    'DAO', 'AI agents', 'robotics', 'IoT', 'Edge Computing', 
+    'Quantum Computing', 'Autonomous Vehicles', 'Smart Cities', 
+    'Digital Twins', 'AI Ethics'
+  ];
+  const otherTopics = [
+    'AI', 'Machine Learning', 'Blockchain', 'Crypto', 'Data Science', 
+    'Cybersecurity', 'Cloud Computing', 'DevOps', 'AR/VR', '5G', 
+    'Natural Language Processing', 'Computer Vision', 'Big Data', 
+    'Augmented Reality', 'Virtual Reality', 'Fintech', 'Healthtech', 
+    'Edtech', 'Agtech', 'Green Technology'
+  ];
   const randomNumber = Math.random();
   
-  const topic = randomNumber < 0.5  ? prioritizedTopics[Math.floor(Math.random() * prioritizedTopics.length)]: otherTopics[Math.floor(Math.random() * otherTopics.length)];
-
+  const topic = randomNumber < 0.5 ? prioritizedTopics[Math.floor(Math.random() * prioritizedTopics.length)] : otherTopics[Math.floor(Math.random() * otherTopics.length)];
   const tweet = await generateTweet(topic);
   if (tweet) {
     await postTweet(tweet);
+    await incrementTweetCountInRedis();
   }
 }
 
 // Job to reply to mentions every 10 minutes
 let lastMentionReplyTime: Date | null = null;
+
+
 async function runReplyToMentionsJob() {
   const now = new Date();
   const X_MINUTES = 10;
@@ -78,13 +142,16 @@ async function runReplyToMentionsJob() {
   const mentions = await getRecentMentions();
   if (mentions) {
     for (const mention of mentions) {
-      const sentiment = await analyzeSentiment(mention.text);
-      await replyToMention(mention, sentiment);
+      await replyToMention(mention);
     }
   }
 
   lastMentionReplyTime = new Date();
+
+
 }
+
+
 
 // Job to monitor trends every 4 hours
 async function runMonitorTrendsJob() {
@@ -104,4 +171,8 @@ async function runPostPollJob() {
 // Job to search tweets using trends every 6 hours
 async function runSearchTweetsJob() {
   await searchTweetsUsingTrends();
+}
+
+async function scrapeAndPostEveryTwoHoursJob(){
+  await scrapeAndPostEveryTwoHours()
 }

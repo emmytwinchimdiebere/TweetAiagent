@@ -1,20 +1,16 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { z } from 'zod';
 import { tool } from "@langchain/core/tools";
+import puppeteer from 'puppeteer';
 
-/*
-const twitterApiKey =  process.env?.NEXT_PUBLIC_TWITTER_API_KEY
-  const twitterApiSecret =  process.env?.NEXT_PUBLIC_TWITTER_API_SECRET
-  const twitterAccessToken = process.env?.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN
-  const twitterAccessTokenSecret =  process.env?.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN_SECRET
+const twitterApiKey =  process.env.NEXT_PUBLIC_TWITTER_API_KEY
+  const twitterApiSecret =  process.env.NEXT_PUBLIC_TWITTER_API_SECRET
+  const twitterAccessToken = process.env.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN
+  const twitterAccessTokenSecret =  process.env.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN_SECRET
 
 
+console.log(twitterAccessToken)
 
-*/
-const twitterApiKey =  "2QX41tK0ERohUxPeUED3Fxxix"
-  const twitterApiSecret = "3ZJArPAxeRwdHnPQY7P7FMfpzw3TxbaqkjEDksOxBixN2Babyf"
-  const twitterAccessToken = "1722500378132934657-ANDo897BJ4zPtLVWFtTCgOibvnFfHw"
-  const twitterAccessTokenSecret =  "3LCXkIWMRPYT6ycy3vUoVtDuHv5cEeOKN1WRLQmQ1XBwo"
 
 
 const TwitterApiReadWrite = new TwitterApi({
@@ -36,7 +32,7 @@ const rw  =  TwitterApiReadWrite.readWrite
     name: 'post_tool',
       description: 'Post a tweet on Twitter',
   schema: z.object({
-    text: z.string().describe("Post  a tweet "),
+    text: z.string().describe("the text to  post "),
   })
   })
   
@@ -44,10 +40,10 @@ const rw  =  TwitterApiReadWrite.readWrite
     return await rw.v2.reply(reply,tweetId)
   }, {
     name: 'reply_tool',
-    description: 'reply to a  tweet',
+    description: 'create replies',
   schema: z.object({
-    reply: z.string().describe("reply a post "),
-    tweetId: z.string().describe("Post id  of  the  tweet  you are  replying  to."),
+    reply: z.string().describe("your  replies"),
+    tweetId: z.string().describe("id  of  the  tweet  you are  replying  to."),
   })
   })
   
@@ -55,7 +51,7 @@ const rw  =  TwitterApiReadWrite.readWrite
     return  await rw.v1.mentionTimeline()
   }, {
     name: "mention_tool",
-    description: 'reply to a  tweet',
+    description: 'get all mentions',
   schema: z.void(),
   })
 
@@ -76,7 +72,7 @@ const rw  =  TwitterApiReadWrite.readWrite
 
   }, {
       name:"trendingTopics_tool",
-      description:"fetch the  current trending topics  on  twitter",
+      description:"fetch the  current trendings",
       schema: z.void()
   })
 
@@ -89,7 +85,7 @@ const rw  =  TwitterApiReadWrite.readWrite
     name: "search_tweets_tool",
     description: "Search for tweets on a specific topic",
     schema: z.object({
-      topic: z.string().describe("The topic to search for on Twitter, e.g., 'DAO', 'AI agents'"),
+      topic: z.string().describe("The topic to search for on Twitter, e.g., 'DAO', 'AI agents', 'robotics' etc"),
     }),
   });
 
@@ -99,9 +95,45 @@ const rw  =  TwitterApiReadWrite.readWrite
   }, {
   
     name:"like_tweet",
-    description:"like a tweet using  this  tool",
+    description:"like a tweet",
     schema:z.object({
-      tweetId:z.string(),
-      userId:z.string()
+      tweetId:z.string().describe("tweet id to like"),
+      userId:z.string().describe("user Id of  the tweet")
+    })
+  })
+
+  export const scrapDataOnlineTool  =  tool(async({url}) =>{
+    
+   try {
+    const browser = await puppeteer.launch({
+
+      headless:true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36');
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout:60000 });
+
+    const headlines = await page.evaluate(() => {
+      const titles: (string | undefined)[] = [];
+      const elements = document.querySelectorAll('h2,.post-card__title, .article-card__title');
+      elements.forEach((el) => titles.push(el.textContent?.trim()));
+      return titles;
+    });
+
+    await browser.close();
+
+    return headlines
+
+   } catch (error) {
+      console.log(error)
+      return  {message:"something  went  wrong",  error:error}
+   }
+  }, {
+    name:"scrapeDataOnline_tool",
+    description:"scraping  tool  for  scraping  data  online ",
+    schema:z.object({
+     url:z.string().describe("the url of  website  to  scrape  data  from."),
     })
   })

@@ -1,7 +1,7 @@
-import { HumanMessage } from '@langchain/core/messages';
+import { HumanMessage} from '@langchain/core/messages';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { postTool, replyTool, mentionTool, accountDetailsTools , trendingTopicsTool, searchTweetsTool, likeTweet } from './twitterApi';
+import { postTool, replyTool, mentionTool, accountDetailsTools , trendingTopicsTool, searchTweetsTool, likeTweet, scrapDataOnlineTool} from './twitterApi';
 
 
 
@@ -13,7 +13,6 @@ interface props{
     }
   
 }
-
 interface msgProps{
   name:string
 }
@@ -26,12 +25,15 @@ interface tweetlikeprops{
   }
 }
 // Initialize tools and LLM agent
-const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet];
+const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet, scrapDataOnlineTool];
 const chat = new ChatGoogleGenerativeAI({
   model: 'gemini-1.5-flash',
-  apiKey: "AIzaSyDMmCvxsno9hZGoqe2Ky9QQXA9HgaoHC8k" ,// Use env variable for API key
-  maxOutputTokens: 100,
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY ,// Use env variable for API key
+  maxOutputTokens: 200,
+  temperature:0.8,
+  
 });
+console.log(process.env.NEXT_PUBLIC_GOOGLE_API_KEY)
 const agent = createReactAgent({
   llm: chat,
   tools,
@@ -43,7 +45,7 @@ const agent = createReactAgent({
 export async function generateTweet(topic: string) {
   try {
     const response = await agent.invoke({
-      messages: new HumanMessage(`Post a creative tweet about ${topic} & add emoji to express your sentiments`),
+      messages: new HumanMessage(`Post a creative tweet about ${topic} & add emoji to express your sentiments,possiblly add image if you can`),
     });
     return response?.content;
   } catch (error) {
@@ -65,22 +67,13 @@ export async function postTweet(content: string) {
 }
 
 // Function to analyze sentiment of a mention
-export async function analyzeSentiment(text: string) {
-  try {
-    const sentiment = await agent.invoke({
-      messages: [new HumanMessage(`Classify the sentiment of the following tweet as positive, negative, or neutral: "${text}"`)],
-    });
-    return sentiment?.content;
-  } catch (error) {
-    console.error('Error analyzing sentiment:', error);
-    throw error;
-  }
-}
+
+
 // Function to get recent mentions and reply
 export async function getRecentMentions() {
   try {
     const mentions = await agent.invoke({
-      messages: new HumanMessage('Please get all Mentions'),
+      messages: new HumanMessage('Please get all mentions'),
     });
     return mentions?.content;
   } catch (error) {
@@ -89,17 +82,17 @@ export async function getRecentMentions() {
   }
 }
 // Function to reply to mentions with sentiment analysis
-export async function replyToMention(mention: props, sentiment: string) {
+export async function replyToMention(mention: props) {
   try {
     const username = mention.user.screen_name;
     const tweetId = mention.id_str;
-    const replyMessage = `Thanks for mentioning me, @${username}!`;
-    if (sentiment === 'positive') {
+   
+ 
       await agent.invoke({
-        messages: new HumanMessage(`Please reply using ${tweetId} to ${replyMessage}`),
+        messages: new HumanMessage(`Please reply using ${tweetId}`),
       });
       console.log(`Replied to mention from @${username}`);
-    }
+    
   } catch (error) {
     console.error('Error replying to mention:', error);
     throw error;
@@ -110,7 +103,7 @@ export async function replyToMention(mention: props, sentiment: string) {
 export async function fetchTrendingTopics() {
   try {
     const trendsResponse = await agent.invoke({
-      messages: [new HumanMessage('Get trending hashtags relevant to technology, AI, DAO, Blockchain, and Crypto')],
+      messages: [new HumanMessage('Get trending hashtags relevant to technology, AI, DAO, Blockchain, and Crypto etc')],
       tools:[trendingTopicsTool]
     });
     return trendsResponse?.content;
@@ -179,15 +172,16 @@ export async function postPollIfNeeded() {
     console.log('Poll already posted today, skipping...');
     return;
   }
-  const pollQuestion = 'What technology do you think will shape the future?';
-  const pollOptions = ['AI', 'DAO', 'Blockchain', 'Crypto'];
+  const pollQuestion = '';
+  const pollOptions = ['', '', '', ''];
   await postPoll(pollQuestion, pollOptions);
   lastPollDate = new Date();
 }
+
 export async function postPoll(question: string, options: string[]) {
   try {
     const response = await agent.invoke({
-      messages: [new HumanMessage(`Post a poll with question '${question}' and options ${options.join(', ')}`)],
+      messages: [new HumanMessage(`generate a provoking & engagement '${question}' and  ${options.join(', ')} like a poll  around relevant topics &  post`)],
     });
     console.log(`Posted poll: ${question}`, response);
   } catch (error) {
@@ -220,12 +214,12 @@ export async function likeATweet(tweetId: string, userId:string) {
     throw error;
   }
 }
-export async function replyToTweet(tweetId: string, username: string, sentiment: string) {
+export async function replyToTweet(tweetId: string, username: string) {
   try {
     await agent.invoke({
-      messages: [new HumanMessage(`Reply to tweet with id '${tweetId}' using  the "${sentiment}"`)],
+      messages: [new HumanMessage(`Reply  tweet with id '${tweetId}'"`)],
     });
-    console.log(`Replied to tweet from @${username} with sentiment: ${sentiment}`);
+    console.log(`Replied tweet from @${username} `);
   } catch (error) {
     console.error('Error replying to tweet:', error);
     throw error;
@@ -237,15 +231,14 @@ export async function processTweets(tweets: tweetlikeprops[]) {
     const tweetId = tweet.id_str;
     const username = tweet.user.screen_name;
     const  userId =  tweet.user.id_str;
-    const text = tweet.text;
+
     // Analyze the sentiment of the tweet
-    const sentiment = await analyzeSentiment(text);
-    if (sentiment === 'positive') {
+ 
       // Like the tweet if positive sentiment
       await likeATweet(tweetId,  userId);
-    }
+    
     // Reply to the tweet based on sentiment
-    await replyToTweet(tweetId, username, sentiment);
+    await replyToTweet(tweetId, username);
   }
 }
 // Modify the function to search tweets by trends and process them
@@ -262,9 +255,62 @@ export async function searchTweetsUsingTrends() {
     }
   }
 }
+export async function scrapeCointelegraphHeadlines(url: string) {
+  console.log('Scraping Cointelegraph headlines...');
+  try {
+    const JsonData = await agent.invoke({
+      messages: [new HumanMessage(`scrape from ${url}`)],
+    });
+
+    // Log the entire JsonData object for debugging
+ 
+
+    if (JsonData && Array.isArray(JsonData.messages)) {
+    
+    const  data =  JsonData?.messages.find(
+      (message:msgProps) => message.name === "scrapeDataOnline_tool"
+    );
 
 
+    return  data.content
+    
+    } else {
+      console.log("Invalid response structure.");
+    }
+  } catch (error) {
+    console.error('Error scraping data:', error);
+    throw error;
+  }
+}
 
+async function createRelevantPostBasedOnSentiment(headline: string[]) {
+
+   try{
+    console.log("creating post from headlines...")
+    const headlines  =  await agent.invoke({
+       messages: [new HumanMessage(`using the "${headline}" create an engaging post & do not  repeat any headline  you have created before`)],
+     });
+     return  headlines
+ 
+   }catch(error){
+    console.log(error)
+   }
+}
+export async function scrapeAndPostEveryTwoHours() {
+ try {
+  console.log('Running Cointelegraph scrape and post cycle...');
+  
+  const headlines = await scrapeCointelegraphHeadlines("https://www.cointelegraph.com");  // Scrape Cointelegraph for headlines
+
+  const  data  =  headlines;
+  if (headlines && headlines.length > 0) {
+    // Process the scraped headlines (analyze sentiment and create relevant posts)
+    await createRelevantPostBasedOnSentiment(data);
+  }
+ } catch (error) {
+    console.log(error)
+ }
+}
 
 (async function startBot() {
   console.log('Starting Twitter Bot...');
@@ -289,6 +335,10 @@ export async function searchTweetsUsingTrends() {
     }
 
     console.log('Twitter Bot is running!');
+    console.log('Cointelegraph Bot is running!');
+
+    // Start the scrape-post cycle
+    await scrapeAndPostEveryTwoHours(); 
   } catch (error) {
     console.error('Error starting bot:', error);
   }

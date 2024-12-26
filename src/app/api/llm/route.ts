@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateTweet } from "@/lib/TwitterBot";
+import {scrapeAndPostEveryTwoHours} from "@/lib/TwitterBot";
 
   
 export async function  POST(request:NextRequest){
@@ -18,7 +18,7 @@ export async function  POST(request:NextRequest){
 
     try {
 
-        const  response  = await generateTweet(data?.data)
+        const  response  = await scrapeAndPostEveryTwoHours()
         console.log("", response)
         return NextResponse.json({
             data: response
