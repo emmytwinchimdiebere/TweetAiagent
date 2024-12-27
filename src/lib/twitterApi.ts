@@ -1,7 +1,7 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { z } from 'zod';
 import { tool } from "@langchain/core/tools";
-
+import puppeteer from 'puppeteer';
 
 const twitterApiKey = process.env.NEXT_PUBLIC_TWITTER_API_KEY;
 const twitterApiSecret = process.env.NEXT_PUBLIC_TWITTER_API_SECRET;
