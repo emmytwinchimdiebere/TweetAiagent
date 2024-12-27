@@ -1,19 +1,13 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { z } from 'zod';
 import { tool } from "@langchain/core/tools";
-import chromium from 'chrome-aws-lambda';
-// Remove the local declaration of 'puppeteer'
 
-const isProduction = process.env.NODE_ENV === 'production';
-
-const puppeteer:any = isProduction ? chromium : await import('puppeteer-core');
 
 const twitterApiKey = process.env.NEXT_PUBLIC_TWITTER_API_KEY;
 const twitterApiSecret = process.env.NEXT_PUBLIC_TWITTER_API_SECRET;
 const twitterAccessToken = process.env.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN;
 const twitterAccessTokenSecret = process.env.NEXT_PUBLIC_TWITTER_ACCESS_TOKEN_SECRET;
 
-console.log(isProduction);
 
 const TwitterApiReadWrite = new TwitterApi({
   appKey: twitterApiKey!,
@@ -100,8 +94,6 @@ export const likeTweet = tool(async ({ userId, tweetId }) => {
 export const scrapDataOnlineTool = tool(async ({ url }) => {
   try {
     const browser = await puppeteer.launch({
-      args: isProduction ? chromium.args : [],
-      executablePath: isProduction ? await chromium.executablePath : "/usr/bin/google-chrome",
       headless: true,
     });
 

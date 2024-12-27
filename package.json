@@ -29,7 +29,7 @@
     "lucide-react": "^0.469.0",
     "next": "^15.1.2",
     "node-cron": "^3.0.3",
-    "puppeteer-core": "^10.4.0",
+    "puppeteer": "^23.11.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sentiment": "^5.0.2",
