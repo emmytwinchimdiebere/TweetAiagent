@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {generateTweet, scrapeAndPostEveryTwoHours} from "@/lib/TwitterBot";
+import {generateTweet} from "@/lib/TwitterBot";
 
   
 export async function  POST(request:NextRequest){
