@@ -33,7 +33,9 @@ const chat = new ChatGoogleGenerativeAI({
   temperature:0.8,
   
 });
-console.log(process.env.NEXT_PUBLIC_GOOGLE_API_KEY)
+if (!process.env.NEXT_PUBLIC_GOOGLE_API_KEY) {
+  throw new Error('API Key not found. Please set the NEXT_PUBLIC_GOOGLE_API_KEY environment variable.');
+}
 const agent = createReactAgent({
   llm: chat,
   tools,
@@ -272,7 +274,10 @@ export async function scrapeCointelegraphHeadlines(url: string) {
     );
 
 
-    return  data.content
+    if(data){
+
+      return  data.content
+    }
     
     } else {
       console.log("Invalid response structure.");
@@ -311,8 +316,25 @@ export async function scrapeAndPostEveryTwoHours() {
     console.log(error)
  }
 }
+// Function to make the agent autonomous
+export async function autonomousAgentGoal(goal: string) {
+  try {
+    const response = await agent.invoke({
+      messages: new HumanMessage(`Your goal is to ${goal}. Think of every possible way to achieve it using the available tools or ask for a tool if needed.`),
+    });
 
-(async function startBot() {
+    if (response && response.output) {
+      console.log('Agent response:', response.output);
+      // Process the response and take necessary actions
+    } else {
+      console.error('No output from the agent.');
+    }
+  } catch (error) {
+    console.error('Error achieving goal:', error);
+  }
+}
+
+( async function startBot() {
   console.log('Starting Twitter Bot...');
   try {
     const details = await agent.invoke({
@@ -329,15 +351,22 @@ export async function scrapeAndPostEveryTwoHours() {
       const accountDetails = JSON.parse(accountDetailsMessage.content);
       // Extract the name
       const name = accountDetails.name;
-      console.log(`Name: ${name}`);
+      console.log(`Name: ${name}`)
+      return  accountDetailsMessage
     } else {
       console.log("Account details message not found.");
     }
 
     console.log('Twitter Bot is running!');
     console.log('Cointelegraph Bot is running!');
-
+    const goal = `
+    Your goal is to increase engagements on our Twitter account and build followers up to 100,000 followers using your capabilities. 
+You are aware of other agents in your environment and should interact with them if needed to achieve your goal. 
+Utilize every means available to you, including posting tweets, replying to followers, engaging with trending topics, and following influential accounts. 
+Tweet at influential accounts to achieve your purpose. believe  in your   self  to reach  your goal.
+`
     // Start the scrape-post cycle
+    await autonomousAgentGoal(goal)
     await scrapeAndPostEveryTwoHours(); 
   } catch (error) {
     console.error('Error starting bot:', error);
