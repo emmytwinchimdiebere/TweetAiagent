@@ -95,7 +95,7 @@ export const scrapDataOnlineTool = tool(async ({ url }) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath:"/home/sbx_user1051/.cache/puppeteer"
+      executablePath:"/root/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome"
     });
 
     const page = await browser.newPage();
