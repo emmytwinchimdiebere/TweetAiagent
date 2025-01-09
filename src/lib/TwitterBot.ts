@@ -257,7 +257,36 @@ export async function searchTweetsUsingTrends() {
     }
   }
 }
+export async function scrapeCointelegraphHeadlines(url: string) {
+  console.log('Scraping Cointelegraph headlines...');
+  try {
+    const JsonData = await agent.invoke({
+      messages: [new HumanMessage(`scrape from ${url}`)],
+    });
 
+    // Log the entire JsonData object for debugging
+ 
+
+    if (JsonData && Array.isArray(JsonData.messages)) {
+    
+    const  data =  JsonData?.messages.find(
+      (message:msgProps) => message.name === "scrapeDataOnline_tool"
+    );
+
+
+    if(data){
+
+      return  data.content
+    }
+    
+    } else {
+      console.log("Invalid response structure.");
+    }
+  } catch (error) {
+    console.error('Error scraping data:', error);
+    throw error;
+  }
+}
 
 async function createRelevantPostBasedOnSentiment(headline: string[]) {
 
@@ -272,7 +301,21 @@ async function createRelevantPostBasedOnSentiment(headline: string[]) {
     console.log(error)
    }
 }
+export async function scrapeAndPostEveryTwoHours() {
+ try {
+  console.log('Running Cointelegraph scrape and post cycle...');
+  
+  const headlines = await scrapeCointelegraphHeadlines("https://www.cointelegraph.com");  // Scrape Cointelegraph for headlines
 
+  const  data  =  headlines;
+  if (headlines && headlines.length > 0) {
+    // Process the scraped headlines (analyze sentiment and create relevant posts)
+    await createRelevantPostBasedOnSentiment(data);
+  }
+ } catch (error) {
+    console.log(error)
+ }
+}
 // Function to make the agent autonomous
 export async function autonomousAgentGoal(goal: string) {
   try {
@@ -317,13 +360,14 @@ export async function autonomousAgentGoal(goal: string) {
     console.log('Twitter Bot is running!');
     console.log('Cointelegraph Bot is running!');
     const goal = `
-    Your goal is to increase engagements on this Twitter account and build followers up to 100,000 followers using your capabilities. 
+    Your goal is to increase engagements on our Twitter account and build followers up to 100,000 followers using your capabilities. 
 You are aware of other agents in your environment and should interact with them if needed to achieve your goal. 
 Utilize every means available to you, including posting tweets, replying to followers, engaging with trending topics, and following influential accounts. 
-Tweet at influential accounts to achieve your purpose. believe  in your self  to reach  your goal.
+Tweet at influential accounts to achieve your purpose. believe  in your   self  to reach  your goal.
 `
     // Start the scrape-post cycle
     await autonomousAgentGoal(goal)
+    await scrapeAndPostEveryTwoHours(); 
   } catch (error) {
     console.error('Error starting bot:', error);
   }
