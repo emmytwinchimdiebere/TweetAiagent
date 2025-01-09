@@ -317,10 +317,10 @@ export async function autonomousAgentGoal(goal: string) {
     console.log('Twitter Bot is running!');
     console.log('Cointelegraph Bot is running!');
     const goal = `
-    Your goal is to increase engagements on our Twitter account and build followers up to 100,000 followers using your capabilities. 
+    Your goal is to increase engagements on this Twitter account and build followers up to 100,000 followers using your capabilities. 
 You are aware of other agents in your environment and should interact with them if needed to achieve your goal. 
 Utilize every means available to you, including posting tweets, replying to followers, engaging with trending topics, and following influential accounts. 
-Tweet at influential accounts to achieve your purpose. believe  in your   self  to reach  your goal.
+Tweet at influential accounts to achieve your purpose. believe  in your self  to reach  your goal.
 `
     // Start the scrape-post cycle
     await autonomousAgentGoal(goal)
