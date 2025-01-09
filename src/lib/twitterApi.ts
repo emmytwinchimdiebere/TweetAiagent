@@ -138,6 +138,6 @@ export const scrapDataOnlineTool = tool(async ({ url }) => {
   name: "scrapeDataOnline_tool",
   description: "scraping tool for scraping data online",
   schema: z.object({
-    url: z.string().describe("the url of the website to scrape data from."),
+    url: z.string().describe("the url of the website to scrape from."),
   }),
 });
