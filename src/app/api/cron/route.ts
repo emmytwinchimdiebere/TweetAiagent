@@ -1,4 +1,4 @@
-import { generateTweet, postTweet, scrapeAndPostEveryTwoHours } from '@/lib/TwitterBot';
+import { generateTweet, postTweet} from '@/lib/TwitterBot';
 import { getRecentMentions, replyToMention } from '@/lib/TwitterBot';
 import { monitorAndPostRelevantTrends, analyzeFollowers, postPollIfNeeded, searchTweetsUsingTrends } from '@/lib/TwitterBot'; // Import your custom functions
 import { NextRequest, NextResponse } from 'next/server';
@@ -46,10 +46,6 @@ export async function POST(req: NextRequest) {
 
       case 'searchTweetsUsingTrendsEvery6Hours':
         await runSearchTweetsJob();
-        break;
-
-       case "scrapeAndPostEveryTwoHours":
-        await  scrapeAndPostEveryTwoHoursJob()
         break;
 
 
@@ -173,6 +169,3 @@ async function runSearchTweetsJob() {
   await searchTweetsUsingTrends();
 }
 
-async function scrapeAndPostEveryTwoHoursJob(){
-  await scrapeAndPostEveryTwoHours()
-}

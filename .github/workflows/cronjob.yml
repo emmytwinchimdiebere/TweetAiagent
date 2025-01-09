@@ -7,7 +7,7 @@ on:
     - cron: '0 */4 * * *' # Runs every 4 hours
     - cron: '0 9 * * *' # Runs daily at 9 AM
     - cron: '0 */6 * * *' # Runs every 6 hours
-    - cron: '0 */2 * * *' # Runs every 2 hours
+
 
   workflow_dispatch: # Allows you to manually trigger the workflow
 
@@ -24,4 +24,4 @@ jobs:
           curl -X POST https://cdptoolkit.vercel.app/api/cron -d '{"job": "dailyFollowerAnalysis"}' -H "Content-Type: application/json"
           curl -X POST https://cdptoolkit.vercel.app/api/cron -d '{"job": "postPollAt9AM"}' -H "Content-Type: application/json"
           curl -X POST https://cdptoolkit.vercel.app/api/cron -d '{"job": "searchTweetsUsingTrendsEvery6Hours"}' -H "Content-Type: application/json"
-          curl -X POST https://cdptoolkit.vercel.app/api/cron -d '{"job": "scrapeAndPostEveryTwoHours"}' -H "Content-Type: application/json"
+  

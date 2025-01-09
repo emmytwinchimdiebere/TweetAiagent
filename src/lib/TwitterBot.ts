@@ -1,7 +1,7 @@
 import { HumanMessage} from '@langchain/core/messages';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { postTool, replyTool, mentionTool, accountDetailsTools , trendingTopicsTool, searchTweetsTool, likeTweet, scrapDataOnlineTool} from './twitterApi';
+import { postTool, replyTool, mentionTool, accountDetailsTools , trendingTopicsTool, searchTweetsTool, likeTweet} from './twitterApi';
 
 
 
@@ -25,7 +25,7 @@ interface tweetlikeprops{
   }
 }
 // Initialize tools and LLM agent
-const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet, scrapDataOnlineTool];
+const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet];
 const chat = new ChatGoogleGenerativeAI({
   model: 'gemini-1.5-flash',
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY ,// Use env variable for API key
@@ -257,36 +257,7 @@ export async function searchTweetsUsingTrends() {
     }
   }
 }
-export async function scrapeCointelegraphHeadlines(url: string) {
-  console.log('Scraping Cointelegraph headlines...');
-  try {
-    const JsonData = await agent.invoke({
-      messages: [new HumanMessage(`scrape from ${url}`)],
-    });
 
-    // Log the entire JsonData object for debugging
- 
-
-    if (JsonData && Array.isArray(JsonData.messages)) {
-    
-    const  data =  JsonData?.messages.find(
-      (message:msgProps) => message.name === "scrapeDataOnline_tool"
-    );
-
-
-    if(data){
-
-      return  data.content
-    }
-    
-    } else {
-      console.log("Invalid response structure.");
-    }
-  } catch (error) {
-    console.error('Error scraping data:', error);
-    throw error;
-  }
-}
 
 async function createRelevantPostBasedOnSentiment(headline: string[]) {
 
@@ -301,21 +272,7 @@ async function createRelevantPostBasedOnSentiment(headline: string[]) {
     console.log(error)
    }
 }
-export async function scrapeAndPostEveryTwoHours() {
- try {
-  console.log('Running Cointelegraph scrape and post cycle...');
-  
-  const headlines = await scrapeCointelegraphHeadlines("https://www.cointelegraph.com");  // Scrape Cointelegraph for headlines
 
-  const  data  =  headlines;
-  if (headlines && headlines.length > 0) {
-    // Process the scraped headlines (analyze sentiment and create relevant posts)
-    await createRelevantPostBasedOnSentiment(data);
-  }
- } catch (error) {
-    console.log(error)
- }
-}
 // Function to make the agent autonomous
 export async function autonomousAgentGoal(goal: string) {
   try {
@@ -367,7 +324,6 @@ Tweet at influential accounts to achieve your purpose. believe  in your   self  
 `
     // Start the scrape-post cycle
     await autonomousAgentGoal(goal)
-    await scrapeAndPostEveryTwoHours(); 
   } catch (error) {
     console.error('Error starting bot:', error);
   }
