@@ -22,7 +22,6 @@
     "@sparticuz/chromium": "^131.0.1",
     "@upstash/redis": "^1.34.3",
     "cheerio": "^1.0.0",
-    "chrome-aws-lambda": "^10.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
