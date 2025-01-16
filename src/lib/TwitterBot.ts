@@ -1,7 +1,7 @@
 import { HumanMessage} from '@langchain/core/messages';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { postTool, replyTool, mentionTool, accountDetailsTools , trendingTopicsTool, searchTweetsTool, likeTweet} from './twitterApi';
+import { postTool, replyTool, mentionTool, accountDetailsTools , trendingTopicsTool, searchTweetsTool, likeTweet, scrapDataOnlineTool} from './twitterApi';
 
 
 
@@ -25,7 +25,7 @@ interface tweetlikeprops{
   }
 }
 // Initialize tools and LLM agent
-const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet];
+const tools = [postTool, replyTool, mentionTool, accountDetailsTools,trendingTopicsTool, searchTweetsTool, likeTweet, scrapDataOnlineTool];
 const chat = new ChatGoogleGenerativeAI({
   model: 'gemini-1.5-flash',
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY ,// Use env variable for API key
@@ -261,7 +261,7 @@ export async function scrapeCointelegraphHeadlines(url: string) {
   console.log('Scraping Cointelegraph headlines...');
   try {
     const JsonData = await agent.invoke({
-      messages: [new HumanMessage(`scrape from ${url}`)],
+      messages: [new HumanMessage(`scrape data from ${url} using the scrapDataOnlineTool`)],
     });
 
     // Log the entire JsonData object for debugging
@@ -273,10 +273,8 @@ export async function scrapeCointelegraphHeadlines(url: string) {
       (message:msgProps) => message.name === "scrapeDataOnline_tool"
     );
 
-
     if(data){
-
-      return  data.content
+    return  data.content
     }
     
     } else {
@@ -288,14 +286,26 @@ export async function scrapeCointelegraphHeadlines(url: string) {
   }
 }
 
-async function createRelevantPostBasedOnSentiment(headline: string[]) {
-
+async function createRelevantPostBasedOnSentiment(headlines: string[]) {
    try{
     console.log("creating post from headlines...")
-    const headlines  =  await agent.invoke({
-       messages: [new HumanMessage(`using the "${headline}" create an engaging post & do not  repeat any headline  you have created before`)],
+    const response  =  await agent.invoke({
+       messages: [new HumanMessage(`using the "${headlines}" create an engaging  post , make sure  you  dont  repeat any headlines you had previously created  `)],
      });
-     return  headlines
+
+     
+if(response && Array.isArray(response?.messages)){
+  const  data =  response?.messages.find(
+    (message:msgProps) => message.name === "post_tool"
+  );
+
+  if(data){
+    return data?.content
+  }
+}
+else{
+ console.log({messagge:"cannot  create  a post or  invalid  data structure"})
+}
  
    }catch(error){
     console.log(error)
@@ -310,7 +320,8 @@ export async function scrapeAndPostEveryTwoHours() {
   const  data  =  headlines;
   if (headlines && headlines.length > 0) {
     // Process the scraped headlines (analyze sentiment and create relevant posts)
-    await createRelevantPostBasedOnSentiment(data);
+   const  response  =   await createRelevantPostBasedOnSentiment(data);
+      return  response;
   }
  } catch (error) {
     console.log(error)
@@ -320,11 +331,11 @@ export async function scrapeAndPostEveryTwoHours() {
 export async function autonomousAgentGoal(goal: string) {
   try {
     const response = await agent.invoke({
-      messages: new HumanMessage(`Your goal is to ${goal}. Think of every possible way to achieve it using the available tools or ask for a tool if needed.`),
+      messages: new HumanMessage(`this is your  ${goal}. Think of every possible way to achieve it using the available tools or ask for a tool if needed.`),
     });
 
-    if (response && response.output) {
-      console.log('Agent response:', response.output);
+    if (response) {
+      console.log('Agent response:', response);
       // Process the response and take necessary actions
     } else {
       console.error('No output from the agent.');
@@ -367,7 +378,6 @@ Tweet at influential accounts to achieve your purpose. believe  in your   self  
 `
     // Start the scrape-post cycle
     await autonomousAgentGoal(goal)
-    await scrapeAndPostEveryTwoHours(); 
   } catch (error) {
     console.error('Error starting bot:', error);
   }

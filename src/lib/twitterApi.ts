@@ -1,6 +1,7 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { z } from 'zod';
 import { tool } from "@langchain/core/tools";
+import { executablePath } from 'puppeteer';
 
 import * as puppeteer from 'puppeteer-core';
 
@@ -102,6 +103,7 @@ export const scrapDataOnlineTool = tool(async ({ url }) => {
       browser = await puppeteer.launch({
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
         headless: true,
+        executablePath:executablePath()
       });
     } else if (process.env.NODE_ENV === 'production') {
       console.log('Production browser: ');
@@ -136,7 +138,7 @@ export const scrapDataOnlineTool = tool(async ({ url }) => {
   }
 }, {
   name: "scrapeDataOnline_tool",
-  description: "scraping tool for scraping data online",
+  description: "scrape data online",
   schema: z.object({
     url: z.string().describe("the url of the website to scrape data from."),
   }),

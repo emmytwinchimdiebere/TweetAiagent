@@ -105,14 +105,14 @@ async function runTweetJob() {
     return;
   }
   const prioritizedTopics = [
-    'DAO', 'AI agents', 'robotics', 'IoT', 'Edge Computing', 
+    'DAO', 'AI Agents', 'robotics', 'IoT', 'Edge Computing', 
     'Quantum Computing', 'Autonomous Vehicles', 'Smart Cities', 
-    'Digital Twins', 'AI Ethics'
+      'AI Ethics','Natural Language Processing', 
   ];
   const otherTopics = [
     'AI', 'Machine Learning', 'Blockchain', 'Crypto', 'Data Science', 
     'Cybersecurity', 'Cloud Computing', 'DevOps', 'AR/VR', '5G', 
-    'Natural Language Processing', 'Computer Vision', 'Big Data', 
+     'Computer Vision', 'Big Data', 
     'Augmented Reality', 'Virtual Reality', 'Fintech', 'Healthtech', 
     'Edtech', 'Agtech', 'Green Technology'
   ];
